@@ -2,7 +2,8 @@
 #include <list>
 
 int PIN_SWITCH = 23;
-int PIN_BUTTON = 22;
+int PIN_IR = 22;
+int PIN_LED = 2;
 int buttonState = 0;      // current state of the button
 int switchState = 0;
 int lastButtonState = 0;  // previous state of the button
@@ -20,7 +21,8 @@ void setup() {
   SerialBT.begin("ESP32test"); // set the device name to "ESP32test"
   Serial.begin(9600);
   pinMode(PIN_SWITCH, INPUT);
-  pinMode(PIN_BUTTON, INPUT);
+  pinMode(PIN_IR, INPUT);
+  pinMode(PIN_LED, OUTPUT);
 }
 
 void loop() {
@@ -85,7 +87,7 @@ void send_list() {
 }
 
 void count() {
-    int reading = digitalRead(PIN_BUTTON);
+    int reading = digitalRead(PIN_IR);
 
     // check if the button state has changed
     if (reading != lastButtonState) {
@@ -99,11 +101,13 @@ void count() {
         buttonState = reading;
 
         // if the button is pressed down, record the start time
-        if (buttonState == LOW) {
+        if (buttonState == HIGH) {
           startTime = millis();
+          digitalWrite(PIN_LED, LOW);
         }
         // if the button is released, record the end time and calculate the duration
         else {
+          digitalWrite(PIN_LED, HIGH);
           endTime = millis();
           int duration = (endTime - startTime) / 1000;
           Serial.print("Duration: ");
