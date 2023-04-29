@@ -7,13 +7,11 @@ int PIN_IR = 22;
 int PIN_LED = 2;
 int IRstate = 1;  // current state of the button
 int switchState = 0;
-int lastIRState = 0;                 // previous state of the button
-int lastSwitchState = 0;             // previous state of the switch
-unsigned long lastDebounceTime = 0;  // the last time the button was toggled
-unsigned long debounceDelay = 50;    // debounce time in milliseconds
-unsigned long startTime = 0;         // the time the button was last pushed
-unsigned long endTime = 0;           // the time the button was pushed again
-std::list<int> list;
+int lastIRState = 0;          // previous state of the button
+int lastSwitchState = 0;      // previous state of the switch
+unsigned long startTime = 0;  // the time the button was last pushed
+unsigned long endTime = 0;    // the time the button was pushed again
+std::list<double> list;
 bool first = false;
 
 BluetoothSerial SerialBT;
@@ -56,7 +54,7 @@ void count() {
         else {
             digitalWrite(PIN_LED, HIGH);
             endTime = millis();
-            int duration = (endTime - startTime) / 1000;
+            double duration = (endTime - startTime) / 1000.0;
             Serial.print("Duration: ");
             Serial.print(duration);
             Serial.println(" seconds");
@@ -66,8 +64,8 @@ void count() {
             first = true;
 
             Serial.print("List: ");
-            for (int n : list) {
-                Serial.print(String(n));
+            for (double n : list) {
+                Serial.print(n, 3);
                 Serial.print(" ");
             }
             Serial.println();
@@ -79,18 +77,15 @@ void count() {
 }
 
 void send_list() {
-    Serial.println("Waiting request...");
-    delay(1000);
+    // Serial.println("Waiting request...");
+    // delay(1000);
 
-    if (SerialBT
-            .available()) {  // check if there is incoming data over Bluetooth
+    if (SerialBT.available()) {  // check if there is incoming data over Bluetooth
         Serial.println("Available!");
-        String request =
-            SerialBT.readString();  // read the request from the Android phone
+        String request = SerialBT.readString();  // read the request from the Android phone
         Serial.print("Request: ");
         Serial.println(request);
-        if (request ==
-            "get_data") {  // if the request is "get_data", send the array
+        if (request == "get_data") {  // if the request is "get_data", send the array
             Serial.println("Configuring...");
 
             int size = list.size();
@@ -98,8 +93,8 @@ void send_list() {
             Serial.println(size);
             String str = "";
 
-            for (int n : list) {
-                String m = String(n);
+            for (double n : list) {
+                String m = String(n, 3);
                 str += m;
                 str += ",";
             }
